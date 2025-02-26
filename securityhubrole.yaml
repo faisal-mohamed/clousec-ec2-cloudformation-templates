@@ -1,0 +1,47 @@
+Parameters:
+  ClouSecMainAccountID:
+    Type: String
+    Description: Enter the ClouSec Main Account ID 
+  
+  ClouSecMainAccountRoleName:
+    Type: String
+    Default: EC2ECRCrossAccessRole
+    Description: Enter the ClouSec Main Role Name
+
+  Rolename:
+    Type: String
+    Default: clousec-securityhub-readonly-role-ec2
+    Description: Enter the Inspector Role Name
+
+Resources:
+  SecurityHubReadOnlyRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Ref Rolename
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 
+                Fn::Sub: "arn:aws:iam::${ClouSecMainAccountID}:role/${ClouSecMainAccountRoleName}"
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSSecurityHubReadOnlyAccess" # Read-only access
+      Policies:
+        - PolicyName: SecurityHubCustomPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - securityhub:CreateActionTarget
+                  - securityhub:CreateInsight
+                  - securityhub:UpdateInsight
+                  - securityhub:BatchUpdateFindings
+                Resource: "*"
+
+Outputs:
+  SecurityHubRoleArn:
+    Description: ARN of the InspectorReadOnlyRole
+    Value: !GetAtt SecurityHubReadOnlyRole.Arn

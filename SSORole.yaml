@@ -1,0 +1,54 @@
+Parameters:
+  ClouSecMainAccountID:
+    Type: String
+    Description: Enter the ClouSec Main Account ID
+    
+  ClouSecMainAccountRoleName:
+    Type: String
+    Default: EC2ECRCrossAccessRole
+    Description: Enter the ClouSec Main Role Name
+  
+  Rolename:
+    Type: String
+    Default: clousec-sso-readonly-role-ec2
+    Description: Enter the SSO Role Name
+  
+Resources:
+  SSOReadOnlyRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Ref Rolename
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: 
+                Fn::Sub: "arn:aws:iam::${ClouSecMainAccountID}:role/${ClouSecMainAccountRoleName}"
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSSSOReadOnly" # Read-only access to AWS OrganizationsIdentityStoreClient
+  IdentityStorePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: IdentityStorePolicy
+      Roles:
+        - !Ref SSOReadOnlyRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - identitystore:DescribeUser
+              - identitystore:IsMemberInGroups
+              - identitystore:ListGroupMemberships
+              - identitystore:DescribeGroupMembership
+              - identitystore:GetGroupMembershipId
+              - identitystore:ListUsers
+              - identitystore:DescribeGroup
+              - identitystore:ListGroups
+              - identitystore:ListGroupMembershipsForMember
+              - identitystore:GetGroupId
+              - identitystore:GetUserId
+            Resource:
+              - '*'
