@@ -39,6 +39,7 @@ Resources:
                   - securityhub:CreateInsight
                   - securityhub:UpdateInsight
                   - securityhub:BatchUpdateFindings
+                  - securityhub:DeleteInsight
                 Resource: "*"
 
 Outputs:

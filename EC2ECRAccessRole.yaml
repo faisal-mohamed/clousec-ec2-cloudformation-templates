@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  CloudFormation template to create an IAM Role named "ECRCrossAccAccessRole" for EC2.
+  It includes two inline policies:
+    - "ECRCrossAccAccess" granting ECR pull permissions.
+    - "STSAssumeRole" allowing assume-role actions on roles in external accounts
+      with account numbers passed as parameters.
+
+Parameters:
+  ConfigAccount:
+    Description: Account number for the config role.
+    Type: String
+  SSOAccount:
+    Description: Account number for the SSO role.
+    Type: String
+  OrgAccount:
+    Description: Account number for the organization role.
+    Type: String
+  SecurityHubAccount:
+    Description: Account number for the Security Hub role.
+    Type: String
+  InspectorAccount:
+    Description: Account number for the Inspector role.
+    Type: String
+
+Resources:
+  ECRCrossAccAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "ECRCrossAccAccessRole"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECRCrossAccAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: AllowPull
+                Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                Resource: "*"
+        - PolicyName: STSAssumeRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: AllowAssumeRoleForConfig
+                Effect: Allow
+                Action: "*"
+                Resource:
+                  - !Sub "arn:aws:iam::${ConfigAccount}:role/clousec-config-readonly-role-ec2"
+                  - !Sub "arn:aws:iam::${SSOAccount}:role/clousec-sso-readonly-role-ec2"
+                  - !Sub "arn:aws:iam::${OrgAccount}:role/clousec-organization-readonly-role-ec2"
+                  - !Sub "arn:aws:iam::${SecurityHubAccount}:role/clousec-securityhub-readonly-role-ec2"
+                  - !Sub "arn:aws:iam::${InspectorAccount}:role/clousec-inspector-readonly-role-ec2"
