@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  CloudFormation template to create an IAM Role named "ECRCrossAccAccessRole" for EC2.
+  CloudFormation template to create an IAM Role named "EC2ECRAccessRole" for EC2.
   It includes two inline policies:
     - "ECRCrossAccAccess" granting ECR pull permissions.
     - "STSAssumeRole" allowing assume-role actions on roles in external accounts
@@ -24,10 +24,10 @@ Parameters:
     Type: String
 
 Resources:
-  ECRCrossAccAccessRole:
+  EC2ECRAccessRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: "ECRCrossAccAccessRole"
+      RoleName: "EC2ECRAccessRole"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
